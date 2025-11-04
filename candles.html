@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>You lit up my world — Teju</title>
+<style>
+  /* -------- basic reset & layout -------- */
+  html,body { height:100%; margin:0; padding:0; }
+  body {
+    font-family: "Copperplate", "Papyrus", fantasy, serif;
+    background: #000;
+    overflow:hidden;
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* background image (your photo) */
+  .bg {
+    position:fixed; inset:0; z-index:0;
+    background-image: url('tej.jpg'); /* <-- put your background file named bg.jpg here or change this */
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.45) contrast(0.95);
+    transform-origin:center;
+    animation: slowZoom 20s linear infinite;
+  }
+  @keyframes slowZoom { from { transform: scale(1); } to { transform: scale(1.04); } }
+
+  /* container for candles */
+  .stage {
+    position:relative;
+    width:100%; height:100%;
+    z-index:2;
+    pointer-events:auto;
+  }
+
+  /* central UI: the button & final message container */
+  .center-ui {
+    position: fixed;
+    left:50%; transform:translateX(-50%);
+    bottom:40px;
+    z-index:6;
+    text-align:center;
+  }
+
+  .btn {
+    background-color: #072B1B;
+    border: 2px solid teal;
+    padding: 15px 30px;
+    font-size: 24px;
+    border-radius: 15px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(75, 163, 105, 0.5);
+    display: block;
+    margin: 1rem auto;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .final-text {
+    position:fixed;
+    left:50%; top:40%;
+    transform:translate(-50%,-50%);
+    z-index:9;
+    text-align:center;
+    font-size:clamp(20px,3.6vw,44px);
+    opacity:0;
+    color: #fff;
+    text-shadow: 0 4px 18px rgba(0,0,0,0.6);
+    pointer-events:none;
+  }
+
+  /* single candle wrapper */
+  .candle {
+    position:absolute;
+    width: 38px;
+    height: 120px;
+    z-index:3;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    transform-origin: center bottom;
+    cursor: pointer;
+  }
+
+  /* candle body */
+  .candle .body {
+    width:16px;
+    height:54px;
+    background: linear-gradient(#fff,#ffe6c7);
+    border-radius:6px;
+    box-shadow: inset 0 -6px 12px rgba(255,180,120,0.6);
+    position:relative;
+    z-index:1;
+  }
+
+  /* wick */
+  .candle .wick {
+    position:absolute;
+    top:-6px; left:50%;
+    transform:translateX(-50%);
+    width:3px; height:8px;
+    background:#333;
+    z-index:2;
+    border-radius:1px;
+  }
+
+  /* flame: multiple layers for realism */
+  .flame {
+    position:absolute;
+    bottom:58px;
+    left:50%;
+    transform:translateX(-50%);
+    width:18px; height:26px;
+    pointer-events:none;
+    z-index:4;
+    filter: drop-shadow(0 6px 14px rgba(255,140,40,0.25));
+  }
+  .flame .f1 {
+    position:absolute; left:50%; transform:translateX(-50%);
+    top:0; width:10px; height:18px;
+    background: radial-gradient(circle at 50% 30%, rgba(255,250,205,0.98) 0%, rgba(255,200,110,0.95) 55%, rgba(255,90,20,0.85) 100%);
+    border-radius:50% 50% 40% 40%;
+    filter: blur(0.6px);
+  }
+  .flame .f2 {
+    position:absolute; left:50%; transform:translateX(-50%);
+    top:3px; width:18px; height:24px;
+    background: radial-gradient(circle at 50% 30%, rgba(255,240,200,0.5) 0%, rgba(255,140,60,0.35) 50%, rgba(0,0,0,0) 100%);
+    border-radius:50%;
+    mix-blend-mode: screen;
+    filter: blur(2px);
+  }
+
+  /* flicker animation */
+  @keyframes flicker {
+    0% { transform: translateY(0) scale(1) rotate(0.2deg); opacity:1; }
+    20% { transform: translateY(-1px) scale(0.98) rotate(-0.6deg); opacity:0.95; }
+    40% { transform: translateY(0.5px) scale(1.03) rotate(0.3deg); opacity:1; }
+    60% { transform: translateY(-0.7px) scale(0.97) rotate(-0.4deg); opacity:0.97; }
+    80% { transform: translateY(0.3px) scale(1.02) rotate(0.3deg); opacity:1; }
+    100% { transform: translateY(0) scale(1) rotate(0); opacity:1; }
+  }
+
+  /* smoke style (realistic translucent) */
+  .smoke {
+    position:absolute;
+    bottom:72px;
+    left:50%;
+    transform:translateX(-50%);
+    width:24px; height:24px;
+    z-index:5;
+    pointer-events:none;
+    opacity:0;
+  }
+
+  .smoke .s {
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    width:10px; height:10px;
+    background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 20%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0) 100%);
+    filter: blur(3px);
+    border-radius:50%;
+    opacity:0.9;
+  }
+
+  /* message that appears in smoke */
+  .smokeText {
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:120px;
+    width:220px;
+    text-align:center;
+    font-size:16px;
+    line-height:1.2;
+    color:rgba(255,255,255,0.98);
+    text-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 6px rgba(255,255,255,0.15);
+    opacity:0;
+    pointer-events:none;
+    z-index:8;
+  }
+
+  /* slight glow when candle lights up */
+  .glow {
+    position:absolute; left:50%; transform:translateX(-50%); bottom:36px;
+    width:120px; height:80px; z-index:2;
+    background: radial-gradient(closest-side, rgba(255,200,120,0.08), rgba(0,0,0,0));
+    filter: blur(6px);
+    opacity:0;
+    pointer-events:none;
+  }
+
+  /* heart rain */
+  .heart {
+    position:fixed; z-index:7; font-size:20px;
+    animation:heartFall linear forwards;
+    left:0;
+    transform:translateY(-10vh);
+    pointer-events:none;
+  }
+  @keyframes heartFall {
+    to { transform: translateY(110vh); opacity:0; }
+  }
+
+  /* small responsive tweaks */
+  @media (max-width:600px) {
+    .candle { width:30px; height:95px; }
+    .candle .body { height:44px; width:14px; }
+    .smokeText { width:160px; font-size:14px; bottom:105px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true"></div>
+
+<div class="stage" id="stage"></div>
+
+<div class="center-ui">
+  <button class="btn" id="startBtn">Light Up ❤️</button>
+</div>
+
+<div class="final-text" id="finalText">You lit up my world, Teju.</div>
+
+<!-- sound note: we left audio out (you said you'll add later) -->
+
+<script>
+/* ----------------- CONFIG ----------------- */
+const TOTAL_CANDLES = 19;
+const APPEAR_INTERVAL_MS = 3000; // 3s between candle births
+const MESSAGE_DISPLAY_MS = 4500; // message shows 4.5s
+const HEART_RAIN_DURATION = 10000; // 10s
+const REASONS = [
+  "Your way of handling me — calm and patient.",
+  "Those eyes that understand my chaos.",
+  "That upper lip — I love how it curls when you smile.",
+  "Your fingers — how they hold mine so steady.",
+  "Your cheeks that I can’t stop touching.",
+  "That tiny dimple near your lips — my favorite anchor.",
+  "Your half-grown moustache and messy beard — so real.",
+  "The way you walk like you own the world.",
+  "Your hair — always slightly perfect in its mess.",
+  "Those eyebrows — like tiny perfect bows.",
+  "Your cute nose that I love to boop.",
+  "Your muscles — warm and protective.",
+  "Your veins that show how strong you are.",
+  "your boobiesssss 😋",
+  "Your voice — the home I go to when I'm lost.",
+  "Your laugh — immediate sunshine.",
+  "How you insult me but make it friendly and funny.",
+  "How you hold my face in your palms like I'm fragile gold.",
+  "You carrying my bag like a proper protector.",
+  "The way you protect me without announcing it.",
+  "The way you kiss — like you mean it.",
+  "That small 'huh' you do — so cute.",
+  "How you feed me with that proud smile.",
+  "How you make me comfortable when I ugly cry.",
+  "When you place your hand on the bus seat so I can sleep.",
+  "That hidden mole I love, shh 😋.",
+  "How you never call me annoying — you just love me harder.",
+  "That time you gave me your chappal on the hill — I never forgot.",
+  "The Tank Bund nights holding hands — safe and warm.",
+  "You being my everything, simple and true."
+];
+// we will pick random reasons from this array
+
+/* ----------------- HELPERS ----------------- */
+// Track which messages have been shown
+const usedMessages = new Set();
+
+function rand(min, max){ return Math.random() * (max-min) + min; }
+function pickRandomReason(){
+  // Filter out used messages
+  const availableMessages = REASONS.filter(msg => !usedMessages.has(msg));
+  
+  // If all messages have been used
+  if (availableMessages.length === 11) {
+    return "You've found all my messages of love! 💕";
+  }
+  
+  // Pick a random unused message
+  const message = availableMessages[Math.floor(Math.random() * availableMessages.length)];
+  usedMessages.add(message); // Mark as used
+  return message;
+}
+
+/* ----------------- Stage & logic ----------------- */
+const stage = document.getElementById('stage');
+const startBtn = document.getElementById('startBtn');
+const finalText = document.getElementById('finalText');
+
+let candleCount = 0;
+let appearTimer = null;
+let candles = [];
+
+startBtn.addEventListener('click', function startSequence(){
+  startBtn.disabled = true;
+  // start spawning candles one-by-one
+  spawnCandle(); // immediate first
+  appearTimer = setInterval(() => {
+    if (candleCount >= TOTAL_CANDLES) {
+      clearInterval(appearTimer);
+      // after small delay show final and heart rain
+      setTimeout(() => showFinalAndRain(), 1400);
+      return;
+    }
+    spawnCandle();
+  }, APPEAR_INTERVAL_MS);
+});
+
+/* spawn a candle at random position */
+function spawnCandle(){
+  const wrapper = document.createElement('div');
+  wrapper.className = 'candle';
+  // choose random position avoiding extreme edges
+  const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+  const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+
+  const left = rand(6, 86); // percent
+  const top = rand(20, 70); // percent from top
+  wrapper.style.left = left + 'vw';
+  wrapper.style.top = top + 'vh';
+
+  // inner structure
+  const glow = document.createElement('div');
+  glow.className = 'glow';
+  wrapper.appendChild(glow);
+
+  const flame = document.createElement('div');
+  flame.className = 'flame';
+  flame.innerHTML = '<div class="f2"></div><div class="f1"></div>';
+  wrapper.appendChild(flame);
+
+  const wick = document.createElement('div');
+  wick.className = 'wick';
+  wrapper.appendChild(wick);
+
+  const body = document.createElement('div');
+  body.className = 'body';
+  wrapper.appendChild(body);
+
+  // smoke placeholder & text
+  const smoke = document.createElement('div');
+  smoke.className = 'smoke';
+  smoke.innerHTML = '<div class="s" style="left:50%;"></div>';
+  wrapper.appendChild(smoke);
+
+  const smokeText = document.createElement('div');
+  smokeText.className = 'smokeText';
+  wrapper.appendChild(smokeText);
+
+  // initial styles (fade-in)
+  wrapper.style.opacity = 0;
+  wrapper.style.transform = 'scale(0.85)';
+
+  stage.appendChild(wrapper);
+  candles.push(wrapper);
+  candleCount++;
+
+  // animate appearance
+  requestAnimationFrame(()=> {
+    wrapper.style.transition = 'opacity 900ms ease, transform 900ms cubic-bezier(.2,.9,.2,1)';
+    wrapper.style.opacity = 1;
+    wrapper.style.transform = 'scale(1)';
+  });
+
+  // start flicker on flame (random speed)
+  const flickerSpeed = rand(900, 1600);
+  flame.style.animation = `flicker ${flickerSpeed}ms infinite`;
+
+  // small subtle glow fade-in
+  setTimeout(()=> { glow.style.opacity = 0.12; glow.style.transition='opacity 600ms'; }, 350);
+
+  // attach click handler to blow out
+  wrapper.addEventListener('click', function onClick(){
+    // avoid double clicking same candle
+    if (wrapper.dataset.blowed) return;
+    wrapper.dataset.blowed = '1';
+    blowOutCandle(wrapper, pickRandomReason());
+  }, {once:true});
+}
+
+/* blow-out effect: animate flame fade, create rising smoke and show text in the smoke */
+function blowOutCandle(wrapper, message){
+  const flame = wrapper.querySelector('.flame');
+  const smoke = wrapper.querySelector('.smoke');
+  const smokeText = wrapper.querySelector('.smokeText');
+  const glow = wrapper.querySelector('.glow');
+
+  // stop the flame flicker gracefully
+  flame.style.transition = 'opacity 220ms ease, transform 220ms ease';
+  flame.style.opacity = 0;
+  // reduce glow
+  glow.style.opacity = 0;
+
+  // create more realistic smoke: multiple rising blobs
+  const blobs = [];
+  const blobCount = 5;
+  for (let i=0;i<blobCount;i++){
+    const b = document.createElement('div');
+    b.className = 's';
+    // random sizing & left offset
+    const size = rand(6,18);
+    b.style.width = size+'px';
+    b.style.height = size+'px';
+    b.style.left = 50 + rand(-12,12) + '%';
+    b.style.bottom = (10 + rand(-4,6))+'px';
+    b.style.opacity = rand(0.12,0.45);
+    b.style.filter = 'blur('+ rand(2,6) +'px)';
+    // position it inside smoke container
+    smoke.appendChild(b);
+    blobs.push(b);
+
+    // animate each blob upward with random path
+    const riseTime = rand(2200, 4200);
+    b.animate([
+      { transform: 'translateY(0) scale(0.6)', opacity: b.style.opacity },
+      { transform: `translateY(${ - (150 + rand(50,180)) }px) translateX(${rand(-30,30)}px) scale(1.2)`, opacity: 0 }
+    ], { duration: riseTime, easing:'ease-out', fill:'forwards' });
+  }
+
+  // show message in smoke area
+  smokeText.textContent = message;
+  smokeText.style.opacity = 0;
+  smokeText.style.transition = 'opacity 400ms ease, transform 400ms ease';
+  smokeText.style.transform = 'translateY(6px) scale(0.98)';
+  smokeText.style.opacity = 1;
+
+  // small whoosh sound placeholder (you said you'll add later)
+  // optionally: play an audio here
+
+  // fade message & remove blobs after MESSAGE_DISPLAY_MS
+  setTimeout(()=> {
+    smokeText.style.opacity = 0;
+    smokeText.style.transform = 'translateY(-10px) scale(0.98)';
+    // remove smoke children smoothly
+    blobs.forEach((b,i)=>{
+      setTimeout(()=> {
+        if (b && b.parentNode) b.parentNode.removeChild(b);
+      }, i*120);
+    });
+    // finally remove the whole candle after a bit
+    setTimeout(()=> {
+      if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+    }, 800);
+  }, MESSAGE_DISPLAY_MS);
+}
+
+/* After all appear show final center text + hearts rain */
+function showFinalAndRain(){
+  finalText.style.transition = 'opacity 1000ms ease, transform 900ms ease';
+  finalText.style.opacity = 1;
+  finalText.style.transform = 'translate(-50%,-50%) scale(1)';
+
+  // start heart rain for HEART_RAIN_DURATION
+  const start = Date.now();
+  const heartInterval = setInterval(()=> {
+    createHeart();
+    if (Date.now() - start > HEART_RAIN_DURATION) {
+      clearInterval(heartInterval);
+    }
+  }, 180);
+  // stop final text after a while
+  setTimeout(()=> {
+    finalText.style.opacity = 0;
+  }, HEART_RAIN_DURATION + 1200);
+}
+
+/* create floating hearts (white) */
+function createHeart(){
+  const h = document.createElement('div');
+  h.className = 'heart';
+  h.style.left = Math.random()*90 + 'vw';
+  h.style.top = '-6vh';
+  h.style.opacity = 0.9;
+  h.style.fontSize = (12 + Math.random()*20) + 'px';
+  h.textContent = '🤍';
+  // random duration
+  const dur = 3500 + Math.random()*3500;
+  h.style.animationDuration = dur + 'ms';
+  document.body.appendChild(h);
+  setTimeout(()=> {
+    if (h && h.parentNode) h.parentNode.removeChild(h);
+  }, dur + 200);
+}
+
+/* Make sure stage resizes properly on orientation changes */
+window.addEventListener('resize', ()=> {
+  // nothing heavy needed - candles use vw/vh so repositioning ok
+});
+</script>
+
+</body>
+</html>

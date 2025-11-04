@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>15 days to go</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>15 days to go</h1>
+        <h3>Hi tejuluuuu, I just wanna remind you that you are the biggest person
+            in my life and i love you so much. Wish you advanced happy birthday bubuuu
+        </h3>
+        <button class="btn">click</button>
+    </div>
+    <div class="story" style="display:none;">
+    <h2>Our Love Story 💞</h2>
+    <p>Once upon a time, a girl with bad luck felt very sad. 
+        She prayed to god asking for a gift. God said why not. So God gifted her
+    a caring, cute handsome, pretty, goofy, fantastic boyfriend. That boy 
+fixed her heart and made her live happily for the entire life!!</p>
+<button id="openBtn" class="btn">Open Your Surprise 🎁</button>
+
+<script>
+document.getElementById("openBtn").addEventListener("click", () => {
+  document.body.style.transition = "opacity 1s";
+  document.body.style.opacity = "0";
+  setTimeout(() => {
+    window.location.href = "candles.html";
+  }, 1000); // after fade
+});
+</script>
+
+  </div>
+  <script src="script.js"></script>

@@ -1,0 +1,56 @@
+h1 { color: #049144; text-align: center; }
+h3 { color: #20F5A0; text-align: center; }
+ body {
+      margin: 0;
+      height: 100vh;
+      background-image: url('tej.jpg');
+      background-size: cover; /* makes it fill the screen */
+      background-position: center; /* centers it nicely */
+      background-repeat: no-repeat; /* no tiling */
+  /* requested site-wide font and white shadow */
+  font-family: Copperplate, Papyrus, fantasy;
+  color: white;
+  /* white glow shadow (adjust blur/spread to taste) */
+  text-shadow: 0 2px 6px rgba(255,255,255,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+.btn {
+  background-color: #072B1B;
+  border: 2px solid teal;
+  padding: 15px 30px;
+  font-size: 24px;
+  border-radius: 15px;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(75, 163, 105, 0.5);
+  display: block;
+  margin: 1rem auto;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.heart {
+  position: fixed;
+  color: white;
+  font-size: 20px;
+  animation: fall 4s linear forwards;
+  top: 0;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.story {
+  color: #388261;
+  font-size: 20px;
+  margin-top: 20px;
+  text-align: center;
+}
